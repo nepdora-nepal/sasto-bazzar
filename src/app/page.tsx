@@ -1,5 +1,6 @@
 import ImageWithFallback from "@/components/common/ImageWithFallback";
-import images from "@/data/images.json";
+import images from "@/../images.json";
+import HeroSection from "@/components/HeroSeciton";
 const HomePage: React.FC = () => {
   return (
     <section className="flex min-h-screen items-center justify-center bg-white text-center px-4">
@@ -19,6 +20,7 @@ const HomePage: React.FC = () => {
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
+      <HeroSection />
     </section>
   );
 };
