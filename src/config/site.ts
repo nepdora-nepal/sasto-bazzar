@@ -1,7 +1,8 @@
+import { tenantName } from "../../tenant.json";
 export const siteConfig = {
   name: "Nepdora",
   description: "Nepdora Preview System",
-  tenantName: "nextjs-web-container",
+  tenantName: tenantName,
   get apiBaseUrl() {
     return process.env.NEXT_PUBLIC_API_URL || `https://${this.tenantName}.nepdora.baliyoventures.com`;
   },
