@@ -1,4 +1,3 @@
-import { MainLayout } from "@/components/layout/MainLayout";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -26,7 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { WhatsApp } from "@/components/common/whatsapp/WhatsApp";
 import Popup from "@/components/common/popup/Popup";
-import { AuthProvider } from "@/contexts/AuthContext";
 
 export default function RootLayout({
   children,
@@ -36,18 +34,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <QueryProvider>
-            <CartProvider>
-              <NextTopLoader color="#6f57cfp" />
-              <MainLayout>
-                {children}
-              </MainLayout>
-            </CartProvider>
-            <WhatsApp />
-            <Popup />
-          </QueryProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <CartProvider>
+            <NextTopLoader color="#6f57cfp" />
+            {children}
+          </CartProvider>
+          <WhatsApp />
+          <Popup />
+        </QueryProvider>
         <Toaster position="bottom-right" richColors />
       </body>
     </html>
