@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { CartProvider } from "@/contexts/CartContext";
-
+import { MainLayout } from "@/components/layout/MainLayout";
 import { Toaster } from "sonner";
 import NextTopLoader from 'nextjs-toploader';
 
@@ -35,9 +35,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <CartProvider>
-            <NextTopLoader color="#6f57cfp" />
-            {children}
+          <CartProvider>  
+            <MainLayout>
+              <NextTopLoader color="#6f57cfp" />
+              {children}
+            </MainLayout>
           </CartProvider>
           <WhatsApp />
           <Popup />
