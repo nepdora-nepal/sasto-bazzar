@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useCategories } from '@/hooks/use-category';
 import { Skeleton } from '@/components/ui/skeleton';
+import Image from 'next/image';
 
 export const FeaturedCategories: React.FC = () => {
     const { data, isLoading } = useCategories({ page_size: 4 });
@@ -28,8 +29,10 @@ export const FeaturedCategories: React.FC = () => {
                             href={`/collections?category=${cat.slug}`}
                             className="group relative h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                         >
-                            <img
+                            <Image
                                 src={cat.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80'}
+                                width={400}
+                                height={400}
                                 alt={cat.name}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
