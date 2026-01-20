@@ -27,7 +27,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-export const CustomerPublishAuthProvider = ({
+export const AuthProvider = ({
   children,
 }: {
   children: ReactNode;
@@ -84,11 +84,20 @@ export const CustomerPublishAuthProvider = ({
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getErrorMessage = (error: any) => {
-    if (error.response) {
-      const status = error.response.status;
-      const data = error.response.data;
+    if (error.status === 400 && error.data?.error?.params?.field_errors) {
+      const fieldErrors = error.data.error.params.field_errors;
+      // Return the first error message from the first field that has an error
+      const firstField = Object.keys(fieldErrors)[0];
+      if (firstField && fieldErrors[firstField].length > 0) {
+        return fieldErrors[firstField][0];
+      }
+    }
 
-      // Handle errors array format: {status: 400, errors: [{message: "...", code: "..."}]}
+    if (error.response || error.data) {
+      const status = error.status || error.response?.status;
+      const data = error.data || error.response?.data;
+
+      // Handle errors array format
       if (
         data?.errors &&
         Array.isArray(data.errors) &&
@@ -96,7 +105,6 @@ export const CustomerPublishAuthProvider = ({
       ) {
         const firstError = data.errors[0];
 
-        // Check for specific error codes
         if (firstError.code === "too_many_login_attempts") {
           return "Too many failed login attempts. Please wait a few minutes before trying again.";
         }
@@ -123,9 +131,10 @@ export const CustomerPublishAuthProvider = ({
         case 400:
           return (
             data?.message ||
+            data?.error?.message ||
             data?.error ||
             data?.detail ||
-            "Invalid login credentials. Please check your email and password."
+            "Invalid request. Please check your information."
           );
         case 403:
           return "Your account has been suspended or disabled. Please contact support.";
@@ -138,9 +147,10 @@ export const CustomerPublishAuthProvider = ({
         default:
           return (
             data?.message ||
+            data?.error?.message ||
             data?.error ||
             data?.detail ||
-            "Login failed. Please try again."
+            "An error occurred. Please try again."
           );
       }
     } else if (error.request) {
@@ -150,17 +160,6 @@ export const CustomerPublishAuthProvider = ({
     }
   };
 
-  // Helper function to check if a page exists (you might need to implement this based on your API)
-  const checkPageExists = async (
-    siteUser: string,
-    page: string
-  ): Promise<boolean> => {
-    try {
-      return page === "home";
-    } catch (error) {
-      return false;
-    }
-  };
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const login = async (data: any) => {
@@ -209,78 +208,28 @@ export const CustomerPublishAuthProvider = ({
           if (redirectParam) {
             router.push(decodeURIComponent(redirectParam));
           } else {
-            // FIXED: Extract siteUser (subdomain) from current URL path
-            const currentPath = window.location.pathname;
-            const pathSegments = currentPath.split("/").filter(Boolean);
-
-            // Find the siteUser from the URL pattern /publish/{siteUser}/login
-            let siteUser = null;
-            const publishIndex = pathSegments.indexOf("publish");
-            if (publishIndex !== -1 && publishIndex + 1 < pathSegments.length) {
-              // Get the subdomain that comes after /publish/
-              siteUser = pathSegments[publishIndex + 1];
-            }
-
-            // If we couldn't extract subdomain from URL path, try getting it from window.location.host
-            if (!siteUser) {
-              const hostname = window.location.hostname;
-              // Check if we're on a subdomain (e.g., bibek.localhost or bibek.nepdora.com)
-              if (hostname.includes(".localhost")) {
-                siteUser = hostname.split(".")[0];
-              } else if (
-                hostname.includes(".nepdora.com") &&
-                hostname !== "nepdora.com" &&
-                hostname !== "www.nepdora.com"
-              ) {
-                siteUser = hostname.split(".")[0];
-              }
-            }
-
-            // Only fallback to user ID if we still don't have siteUser
-            // This should rarely happen in normal subdomain-based routing
-            if (!siteUser) {
-              console.warn(
-                "Could not determine subdomain, falling back to user ID"
-              );
-              siteUser = loggedInUser.id?.toString() || loggedInUser.email;
-            }
-
-            try {
-              // Try to check if home page exists
-              const homePageExists = await checkPageExists(siteUser, "home");
-
-              if (homePageExists) {
-                router.push(`/home`);
-              } else {
-                // Fallback to base publish URL
-                router.push(``);
-              }
-            } catch (error) {
-              console.warn(
-                "Could not check page existence, using fallback:",
-                error
-              );
-              // If page check fails, try home first
-              router.push(`/home`);
-            }
+            // Simply redirect to home page
+            router.push("/");
           }
         }
       } else {
         // Server-side rendering fallback
-        // In SSR context, we should have access to the original request path
-        console.warn("SSR context detected - using fallback redirect");
-        router.push(
-          `/publish/${loggedInUser.id?.toString() || loggedInUser.email}/home`
-        );
+        router.push("/");
       }
       //eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage);
+      // Only show toast if it's not a validation error (which will be handled by the form)
+      if (
+        error.status !== 400 ||
+        !error.data?.error?.params?.field_errors
+      ) {
+        toast.error(errorMessage);
+      }
       console.error("Login error:", {
         message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
+        status: error.status || error.response?.status,
+        data: error.data || error.response?.data,
         error,
       });
       throw error;
@@ -296,50 +245,26 @@ export const CustomerPublishAuthProvider = ({
     try {
       const signupData = {
         ...data,
-        password: data.password,
       };
 
       delete signupData.confirmPassword;
 
-      const response = await signupUser(signupData);
+      await signupUser(signupData);
 
-      // Don't auto-login after signup, just redirect to login page
       toast.success("Account created successfully! Please log in to continue.");
-
-      // FIXED: Extract siteUser from current URL path and redirect to publish-specific login
-      if (typeof window !== "undefined") {
-        const currentPath = window.location.pathname;
-        const pathSegments = currentPath.split("/");
-
-        // Find the siteUser from the URL pattern /publish/{siteUser}/signup
-        let siteUser = null;
-        const publishIndex = pathSegments.indexOf("publish");
-        if (publishIndex !== -1 && publishIndex + 1 < pathSegments.length) {
-          siteUser = pathSegments[publishIndex + 1];
-        }
-
-        if (siteUser) {
-          router.push(`/login`);
-        } else {
-          // Fallback to general login page if siteUser cannot be determined
-          router.push("/login");
-        }
-      } else {
-        // Fallback for server-side rendering
-        router.push("/login");
-      }
+      router.push("/login");
       //eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
-
-      toast.error(errorMessage);
-
-      console.error("Signup error:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        error,
-      });
+      // Only show toast if it's not a validation error
+      if (
+        error.status !== 400 ||
+        !error.data?.error?.params?.field_errors
+      ) {
+        toast.error(errorMessage);
+      }
+      console.error("Signup error:", error);
+      throw error;
     } finally {
       setIsLoading(false);
     }

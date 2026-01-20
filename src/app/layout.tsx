@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/contexts/CartContext";
 
+import { Toaster } from "sonner";
+import NextTopLoader from 'nextjs-toploader';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Sales CRM - Modern Solutions for Your Business",
-  description: "Your ultimate solution for managing sales and customer relationships with cutting-edge technology.",
-};
+import { siteConfigAPI } from "@/services/api/site-config";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await siteConfigAPI.getSiteConfig();
+
+  return {
+    title: config?.business_name || "SastoBazaar - Premium Shopping Experience",
+    description: config?.business_description || "Your ultimate solution for managing sales and customer relationships with cutting-edge technology.",
+    icons: {
+      icon: config?.favicon || "",
+    },
+  };
+}
+
+import { WhatsApp } from "@/components/common/whatsapp/WhatsApp";
+import Popup from "@/components/common/popup/Popup";
 
 export default function RootLayout({
   children,
@@ -21,15 +33,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn("min-h-screen bg-background antialiased", inter.className)}>
+      <body className={inter.className}>
         <QueryProvider>
           <CartProvider>
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Toaster />
+            <NextTopLoader color="#6f57cfp" />
+            {children}
           </CartProvider>
+          <WhatsApp />
+          <Popup />
         </QueryProvider>
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   );
