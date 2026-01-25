@@ -5,7 +5,7 @@ import { useProductsWithParams } from '@/hooks/use-product';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/products/ProductCard';
 
-export const FeaturedProducts: React.FC = () => {
+export default function FeaturedProducts() {
     const { data, isLoading } = useProductsWithParams({ is_featured: true, page_size: 4 });
     const products = data?.results || [];
 

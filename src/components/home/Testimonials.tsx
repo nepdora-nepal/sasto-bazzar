@@ -6,7 +6,7 @@ import { useTestimonials } from '@/hooks/use-testimonials';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 
-export const Testimonials: React.FC = () => {
+export default function Testimonials() {
     const { data: testimonials = [], isLoading } = useTestimonials();
 
     return (

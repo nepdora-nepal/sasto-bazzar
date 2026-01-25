@@ -10,7 +10,7 @@ import { Loader2, Heart, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-const WishlistPage = () => {
+export default function WishlistPage() {
   const { isAuthenticated } = useAuth();
   const { data: wishlistItems, isLoading, error } = useWishlist();
 
@@ -172,4 +172,3 @@ const WishlistPage = () => {
   );
 };
 
-export default WishlistPage;

@@ -6,7 +6,7 @@ import { useCategories } from '@/hooks/use-category';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 
-export const FeaturedCategories: React.FC = () => {
+export default function FeaturedCategories() {
     const { data, isLoading } = useCategories({ page_size: 4 });
     const categories = data?.results || [];
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react';
 
-export const Features: React.FC = () => {
+export default function Features() {
     const features = [
         {
             icon: <Truck size={24} />,

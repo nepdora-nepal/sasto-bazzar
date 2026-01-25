@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
-export const FAQSection: React.FC = () => {
+export default function FAQSection() {
     const { data: faqs, isLoading, error } = useFAQs();
 
     if (isLoading) {
@@ -99,4 +99,3 @@ export const FAQSection: React.FC = () => {
     );
 };
 
-export default FAQSection;

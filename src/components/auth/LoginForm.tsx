@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 
-export const LoginForm = () => {
+export default function LoginForm() {
     const { login, isLoading } = useAuth();
     const {
         register,

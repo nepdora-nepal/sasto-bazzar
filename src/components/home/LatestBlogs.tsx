@@ -5,7 +5,7 @@ import { useRecentBlogs } from '@/hooks/use-blogs';
 import { Skeleton } from '@/components/ui/skeleton';
 import BlogsCard from '@/components/news/BlogsCard';
 
-export const LatestBlogs: React.FC = () => {
+export default function LatestBlogs() {
     const { data: blogs = [], isLoading } = useRecentBlogs();
 
     return (

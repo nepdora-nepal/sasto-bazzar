@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const Newsletter: React.FC = () => {
+export default function Newsletter() {
     const [email, setEmail] = useState("");
     const createNewsletter = useCreateNewsletter();
 
